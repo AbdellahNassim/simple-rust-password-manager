@@ -1,5 +1,8 @@
+pub mod models;
+pub mod services;
 use clap::{Parser, Subcommand};
 
+use services::commands::{add_credential, get_credential, delete_credential, list_credentials};
 #[derive(Parser)]
 struct Cli {
     #[command(subcommand)]
@@ -8,26 +11,28 @@ struct Cli {
 
 #[derive(Subcommand)]
 enum Commands {
-    Add,
-    Get,
+    Add { service: String, username: String},
+    Get {
+        service: String,
+    },
     List,
-    Remove,
+    Delete { service: String },
 }
 
 fn main() {
     let cli = Cli::parse();
     match cli.command {
-        Commands::Add => {
-            println!("Adding a new password");
+        Commands::Add { service, username } => {
+            add_credential(service, username);
         },
-        Commands::Get => {
-            println!("Getting a password");
+        Commands::Get { service } => {
+            get_credential(service);
         },
         Commands::List => {
-            println!("Listing all passwords");
+            list_credentials();
         },
-        Commands::Remove => {
-            println!("Removing a password");
+        Commands::Delete { service } => {
+            delete_credential(service);
         },
         _ => {
             println!("Invalid command");
