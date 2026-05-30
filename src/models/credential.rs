@@ -1,6 +1,6 @@
 use std::fmt::Display;
 
-#[derive(Debug,Clone)]
+#[derive(Debug,Clone,PartialEq)]
 pub struct Credential {
     pub id: u32,
     pub service: String,
@@ -10,6 +10,20 @@ pub struct Credential {
 
 impl Credential {
     pub fn new(id: u32, service: String, username: String, password: String) -> Self {
+        
+        assert!(
+            !service.trim().is_empty(),
+            "Service cannot be empty"
+        );
+        assert!(
+            !username.trim().is_empty(),
+            "Username cannot be empty"
+        );
+        assert!(
+            !password.trim().is_empty(),
+            "Password cannot be empty"
+        );
+        
         Self { id, service, username, password }
     }
 }
@@ -31,5 +45,23 @@ mod tests {
         assert_eq!(credential.service, "test");
         assert_eq!(credential.username, "test".to_string());
         assert_eq!(credential.password, "test".to_string());
+    }
+
+    #[test]
+    #[should_panic(expected = "Service cannot be empty")]
+    fn test_new_credential_empty_service() {
+        Credential::new(1, "".to_string(), "test".to_string(), "test".to_string());
+    }
+
+    #[test]
+    #[should_panic(expected = "Username cannot be empty")]
+    fn test_new_credential_empty_username() {
+        Credential::new(1, "test".to_string(), "".to_string(), "test".to_string());
+    }
+
+    #[test]
+    #[should_panic(expected = "Password cannot be empty")]
+    fn test_new_credential_empty_password() {
+        Credential::new(1, "test".to_string(), "test".to_string(), "".to_string());
     }
 }
