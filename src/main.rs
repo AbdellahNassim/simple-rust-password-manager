@@ -1,5 +1,6 @@
 pub mod models;
 pub mod services;
+pub mod data;
 use clap::{Parser, Subcommand};
 
 use services::commands::{add_credential, get_credential, delete_credential, list_credentials};
