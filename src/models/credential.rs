@@ -1,5 +1,5 @@
 use std::fmt::Display;
-
+use crate::errors::AppError;
 #[derive(Debug,Clone,PartialEq)]
 pub struct Credential {
     pub id: u32,
@@ -9,22 +9,17 @@ pub struct Credential {
 }
 
 impl Credential {
-    pub fn new(id: u32, service: String, username: String, password: String) -> Self {
-        
-        assert!(
-            !service.trim().is_empty(),
-            "Service cannot be empty"
-        );
-        assert!(
-            !username.trim().is_empty(),
-            "Username cannot be empty"
-        );
-        assert!(
-            !password.trim().is_empty(),
-            "Password cannot be empty"
-        );
-        
-        Self { id, service, username, password }
+    pub fn new(id: u32, service: String, username: String, password: String) -> Result<Self,AppError> {
+        if service.trim().is_empty() {
+            return Err(AppError::EmptyService);
+        }
+        if username.trim().is_empty() {
+            return Err(AppError::EmptyUsername);
+        }
+        if password.trim().is_empty() {
+            return Err(AppError::EmptyPassword);
+        }
+        Ok(Self { id, service, username, password })
     }
 }
 
@@ -40,7 +35,7 @@ mod tests {
 
     #[test]
     fn test_new_credential() {
-        let credential = Credential::new(1, "test".to_string(), "test".to_string(), "test".to_string());
+        let credential = Credential::new(1, "test".to_string(), "test".to_string(), "test".to_string()).unwrap();
         assert_eq!(credential.id, 1);
         assert_eq!(credential.service, "test");
         assert_eq!(credential.username, "test".to_string());
@@ -48,20 +43,23 @@ mod tests {
     }
 
     #[test]
-    #[should_panic(expected = "Service cannot be empty")]
     fn test_new_credential_empty_service() {
-        Credential::new(1, "".to_string(), "test".to_string(), "test".to_string());
+        let result = Credential::new(1, "".to_string(), "test".to_string(), "test".to_string());
+        assert!(result.is_err());
+        assert!(matches!(result.unwrap_err(), AppError::EmptyService));
     }
 
     #[test]
-    #[should_panic(expected = "Username cannot be empty")]
     fn test_new_credential_empty_username() {
-        Credential::new(1, "test".to_string(), "".to_string(), "test".to_string());
+        let result = Credential::new(1, "test".to_string(), "".to_string(), "test".to_string());
+        assert!(result.is_err());
+        assert!(matches!(result.unwrap_err(), AppError::EmptyUsername));
     }
 
     #[test]
-    #[should_panic(expected = "Password cannot be empty")]
     fn test_new_credential_empty_password() {
-        Credential::new(1, "test".to_string(), "test".to_string(), "".to_string());
+        let result = Credential::new(1, "test".to_string(), "test".to_string(), "".to_string());
+        assert!(result.is_err());
+        assert!(matches!(result.unwrap_err(), AppError::EmptyPassword));
     }
 }

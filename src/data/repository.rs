@@ -46,7 +46,7 @@ mod tests {
     #[test]
     fn test_add_credential_in_memory() {
         let mut repository = InMemoryCredentialRepository::new();
-        let credential = Credential::new(1, "test".to_string(), "test".to_string(), "test".to_string());
+        let credential = Credential::new(1, "test".to_string(), "test".to_string(), "test".to_string()).unwrap();
         repository.add_credential(credential).unwrap();
         assert_eq!(repository.credentials.len(), 1);
     }
@@ -54,7 +54,7 @@ mod tests {
     #[test]
     fn test_get_credential_by_service_in_memory() {
         let mut repository = InMemoryCredentialRepository::new();
-        let credential = Credential::new(1, "test".to_string(), "test".to_string(), "test".to_string());
+        let credential = Credential::new(1, "test".to_string(), "test".to_string(), "test".to_string()).unwrap();
         repository.add_credential(credential).unwrap();
         let result = repository.get_credential_by_service("test".to_string()).unwrap();
         assert!(result.is_some());
@@ -63,7 +63,7 @@ mod tests {
     #[test]
     fn test_delete_credential_in_memory() {
         let mut repository = InMemoryCredentialRepository::new();
-        let credential = Credential::new(1, "test".to_string(), "test".to_string(), "test".to_string());
+        let credential = Credential::new(1, "test".to_string(), "test".to_string(), "test".to_string()).unwrap();
         repository.add_credential(credential).unwrap();
         let result = repository.delete_credential("test".to_string()).unwrap();
         assert!(result);

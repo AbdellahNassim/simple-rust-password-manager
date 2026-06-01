@@ -1,6 +1,7 @@
 pub mod models;
 pub mod services;
 pub mod data;
+pub mod errors;
 use clap::{Parser, Subcommand};
 
 use services::commands::{add_credential, get_credential, delete_credential, list_credentials};
@@ -24,7 +25,9 @@ fn main() {
     let cli = Cli::parse();
     match cli.command {
         Commands::Add { service, username } => {
-            add_credential(service, username);
+            if let Err(e) = add_credential(service, username) {
+                eprintln!("Error: {}", e);
+            }
         },
         Commands::Get { service } => {
             get_credential(service);

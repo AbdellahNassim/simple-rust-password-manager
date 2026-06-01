@@ -7,3 +7,4 @@ edition = "2024"
 
 clap = { version = "4.5.29", features = ["derive"] }
 rpassword = "7.2.0"
+thiserror = "2.0.10"
