@@ -3,8 +3,9 @@ pub mod services;
 pub mod data;
 pub mod errors;
 use clap::{Parser, Subcommand};
-
+use data::database::{create_pool,initialize_database};
 use services::commands::{add_credential, get_credential, delete_credential, list_credentials};
+use data::sqlite_repository::SqliteCredentialRepository;
 #[derive(Parser)]
 struct Cli {
     #[command(subcommand)]
@@ -21,7 +22,11 @@ enum Commands {
     Delete { service: String },
 }
 
-fn main() {
+#[tokio::main]
+async fn main() {
+    let pool = create_pool().await.expect("Failed to create database pool");
+    initialize_database(&pool).await.expect("Failed to initialize database");
+    let repository = SqliteCredentialRepository::new(pool.clone());
     let cli = Cli::parse();
     match cli.command {
         Commands::Add { service, username } => {

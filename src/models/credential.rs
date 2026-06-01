@@ -1,6 +1,6 @@
 use std::fmt::Display;
 use crate::errors::AppError;
-#[derive(Debug,Clone,PartialEq)]
+#[derive(Debug,Clone,PartialEq,sqlx::FromRow)]
 pub struct Credential {
     pub id: u32,
     pub service: String,
