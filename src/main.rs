@@ -2,6 +2,7 @@ pub mod models;
 pub mod services;
 pub mod data;
 pub mod errors;
+pub mod crypto;
 use clap::{Parser, Subcommand};
 use data::database::{create_pool,initialize_database};
 use services::commands::{add_credential, get_credential, delete_credential, list_credentials};
@@ -26,25 +27,28 @@ enum Commands {
 async fn main() {
     let pool = create_pool().await.expect("Failed to create database pool");
     initialize_database(&pool).await.expect("Failed to initialize database");
-    let repository = SqliteCredentialRepository::new(pool.clone());
+    let mut repository = SqliteCredentialRepository::new(pool.clone());
     let cli = Cli::parse();
     match cli.command {
         Commands::Add { service, username } => {
-            if let Err(e) = add_credential(service, username) {
+            if let Err(e) = add_credential(&mut repository, service, username).await {
                 eprintln!("Error: {}", e);
             }
         },
         Commands::Get { service } => {
-            get_credential(service);
+            if let Err(e) = get_credential(&repository, service).await {
+                eprintln!("Error: {}", e);
+            }
         },
         Commands::List => {
-            list_credentials();
+            if let Err(e) = list_credentials(&repository).await {
+                eprintln!("Error: {}", e);
+            }
         },
         Commands::Delete { service } => {
-            delete_credential(service);
-        },
-        _ => {
-            println!("Invalid command");
-        },
+            if let Err(e) = delete_credential(&mut repository, service).await {
+                eprintln!("Error: {}", e);
+            }
+        }
     }
 }

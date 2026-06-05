@@ -11,5 +11,17 @@ pub enum AppError {
     #[error("Credential not found")]
     CredentialNotFound,
     #[error("Failed to read password")]
-    FailedToReadPassword
+    FailedToReadPassword,
+    #[error("Failed to add credential")]
+    FailedToAddCredential,
+    #[error("Failed to list credentials")]
+    FailedToListCredentials,
+    #[error("Failed to get credential")]
+    FailedToGetCredential,
+    #[error("Failed to delete credential")]
+    FailedToDeleteCredential,
+    #[error("Failed to encrypt password")]
+    EncryptionError,
+    #[error("Failed to decrypt password")]
+    DecryptionError,
 }
