@@ -3,6 +3,7 @@ pub mod services;
 pub mod data;
 pub mod errors;
 pub mod crypto;
+pub mod master_password;
 use clap::{Parser, Subcommand};
 use data::database::{create_pool,initialize_database};
 use services::commands::{add_credential, get_credential, delete_credential, list_credentials};
@@ -21,6 +22,7 @@ enum Commands {
     },
     List,
     Delete { service: String },
+    Setup,
 }
 
 #[tokio::main]
@@ -49,6 +51,9 @@ async fn main() {
             if let Err(e) = delete_credential(&mut repository, service).await {
                 eprintln!("Error: {}", e);
             }
+        },
+        Commands::Setup => {
+         println!("Setting up the vault");
         }
     }
 }

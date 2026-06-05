@@ -3,7 +3,7 @@ use std::io::{self, Write};
 use crate::errors::AppError;
 use crate::models::credential::Credential;
 use crate::data::repository::CredentialRepository;
-use crate::crypto::{encrypt, decrypt};
+use crate::crypto::{CryptoService};
 
 fn read_password_input() -> Result<String, AppError> {
     read_password().map_err(|_| AppError::FailedToReadPassword)
@@ -16,7 +16,8 @@ where R: CredentialRepository + Send + Sync + 'static
 print!("Enter password for {}: ", service);
 io::stdout().flush().unwrap();
 let password = read_password_input()?;
-let encrypted_password = encrypt(&password).map_err(|_| AppError::EncryptionError)?;
+let crypto_service = CryptoService::new("password").map_err(|_| AppError::EncryptionError)?;
+let encrypted_password = crypto_service.encrypt(&password).map_err(|_| AppError::EncryptionError)?;
 let credential = Credential::new(1, service, username, encrypted_password)?;
 
 repository.add_credential(credential).await.map_err(|_| AppError::FailedToAddCredential)?;
@@ -38,7 +39,8 @@ where R: CredentialRepository + Send + Sync + 'static
     }
     let borrowed_credential = credential.as_ref().unwrap();
     println!("{}: {}", borrowed_credential.service, borrowed_credential.username);
-    let decrypted_password = decrypt(&borrowed_credential.password).map_err(|_| AppError::DecryptionError)?;
+    let crypto_service = CryptoService::new("password").map_err(|_| AppError::EncryptionError)?;
+    let decrypted_password = crypto_service.decrypt(&borrowed_credential.password).map_err(|_| AppError::DecryptionError)?;
     println!("Password: {}", decrypted_password);
     println!("--------------------------------");
     Ok(())

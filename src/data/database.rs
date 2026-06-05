@@ -7,7 +7,6 @@ pub async fn create_pool() -> Result<SqlitePool, sqlx::Error> {
 }
 
 pub async fn initialize_database(pool: &SqlitePool) -> Result<(), sqlx::Error> {
-
     sqlx::query(
         r#"
         CREATE TABLE IF NOT EXISTS credentials (
@@ -16,9 +15,16 @@ pub async fn initialize_database(pool: &SqlitePool) -> Result<(), sqlx::Error> {
             username TEXT NOT NULL,
             password TEXT NOT NULL
         );
-        "#
-    ).execute(pool).await?;
 
+        CREATE TABLE IF NOT EXISTS vault (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            password_hash TEXT NOT NULL,
+            salt TEXT NOT NULL
+        );
+        "#,
+    )
+    .execute(pool)
+    .await?;
 
     Ok(())
 }
