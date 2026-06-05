@@ -12,10 +12,10 @@ pub struct CryptoService {
 }
 
 impl CryptoService {
-    pub fn new(master_password: &str) -> Result<Self, String> {
+    pub fn new(master_password: &str, salt: &str) -> Result<Self, String> {
         let mut key = [0u8; 32];
         Argon2::default()
-            .hash_password_into(master_password.as_bytes(), b"vault-salt", &mut key)
+            .hash_password_into(master_password.as_bytes(), salt.as_bytes(), &mut key)
             .map_err(|e| e.to_string())?;
         let cipher = Aes256Gcm::new_from_slice(&key).map_err(|e| e.to_string())?;
         Ok(Self { cipher })
@@ -54,7 +54,8 @@ mod tests {
     fn test_encrypt_decrypt() {
         let plaintext = "Hello, world!";
         let master_password = "password";
-        let crypto_service = CryptoService::new(master_password).unwrap();
+        let salt = "vault-salt";
+        let crypto_service = CryptoService::new(master_password, salt).unwrap();
         let encrypted = crypto_service.encrypt(plaintext).unwrap();
         let decrypted = crypto_service.decrypt(&encrypted).unwrap();
         assert_eq!(plaintext, decrypted);
@@ -62,15 +63,18 @@ mod tests {
 
     #[test]
     fn test_different_master_passwords_fail() {
+        let salt = "vault-salt";
         let crypto1 =
             CryptoService::new(
                 "password-one",
+                salt,
             )
             .unwrap();
 
         let crypto2 =
             CryptoService::new(
                 "password-two",
+                salt,
             )
             .unwrap();
 
