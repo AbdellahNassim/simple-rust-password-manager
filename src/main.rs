@@ -1,16 +1,10 @@
-pub mod models;
-pub mod services;
-pub mod data;
-pub mod errors;
-pub mod crypto;
-pub mod master_password;
-pub mod auth;
 use clap::{Parser, Subcommand};
-use data::database::{create_pool,initialize_database};
-use services::commands::{add_credential, get_credential, delete_credential, list_credentials,setup_vault};
-use data::sqlite_repository::SqliteCredentialRepository;
+use password_manager::data::database::{create_pool,run_migrations};
+use password_manager::services::commands::{add_credential, get_credential, delete_credential, list_credentials,setup_vault};
+use password_manager::data::sqlite_repository::SqliteCredentialRepository;
 
-use crate::auth::auth::authenticate;
+use password_manager::auth::auth::authenticate;
+use password_manager::services::password_generator::{generate_password, validate_length};
 #[derive(Parser)]
 struct Cli {
     #[command(subcommand)]
@@ -26,12 +20,19 @@ enum Commands {
     List,
     Delete { service: String },
     Setup,
+    Generate { 
+        length: usize,
+        #[arg(long)]
+        no_symbols: bool,
+        #[arg(long)]
+        copy: bool,
+     },
 }
 
 #[tokio::main]
 async fn main() {
-    let pool = create_pool().await.expect("Failed to create database pool");
-    initialize_database(&pool).await.expect("Failed to initialize database");
+    let pool = create_pool("sqlite:vault.db").await.expect("Failed to create database pool");
+    run_migrations(&pool).await.expect("Failed to run migrations");
     let mut repository = SqliteCredentialRepository::new(pool.clone());
     let cli = Cli::parse();
     match cli.command {
@@ -63,6 +64,18 @@ async fn main() {
             if let Err(e) = setup_vault(&mut repository).await {
                 eprintln!("Error: {}", e);
             }
+        }
+        Commands::Generate { length, no_symbols, copy } => {
+           if let Err(e) = validate_length(length) {
+            eprintln!("Error: {}", e);
+            return;
+           }
+           let password = generate_password(length, no_symbols);
+           println!("Generated password: {}", password);
+           if copy {
+            arboard::Clipboard::new().unwrap().set_text(password).unwrap();
+            println!("Password copied to clipboard");
+           }
         }
     }
 }
